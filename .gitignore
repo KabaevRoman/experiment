@@ -1,0 +1,7 @@
+.venv
+venv
+redis_data
+db.db
+.idea
+.DS_Store
+__pycache__

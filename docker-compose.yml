@@ -1,0 +1,38 @@
+services:
+  worker:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    image: test:latest
+    pull_policy: build
+    depends_on:
+      - redis
+    restart: always
+    command: python subscriber.py
+    volumes:
+      - './:/src'
+    env_file:
+      - .env
+  app:
+    image: test:latest
+    pull_policy: build
+    depends_on:
+      - worker
+    volumes:
+      - './:/src'
+    command: deploy/entrypoint.sh
+    ports:
+      - '8001:8000'
+    env_file:
+      - .env
+  redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - "./redis_data:/data"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
